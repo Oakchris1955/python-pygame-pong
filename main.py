@@ -48,6 +48,12 @@ class Player():
 
 	def draw(self):
 		x = self.get_x_position()
+
+		# Begin by drawing the score
+		score_font = pygame.font.SysFont('freesanbold.ttf', 50)
+		score = score_font.render(str(self.score), True, COLORS.GRAY)
+		self.window.blit(score, center_coords(x-self.paddle_width*2, self.dimensions[1]/2-75, self.dimensions))
+
 		paddle = pygame.Rect(center_coords(x-self.paddle_width/2, self.y_offset+self.paddle_height/2, self.dimensions), (self.paddle_width, self.paddle_height))
 		# Draw the main paddle
 		pygame.draw.rect(self.window, COLORS.WHITE, paddle)
@@ -127,6 +133,7 @@ class Ball:
 
 
 pygame.init()
+pygame.font.init()
 
 def get_active_monitor() -> Monitor or None:
 	for m in get_monitors():
