@@ -1,0 +1,2 @@
+screeninfo = 0.8.1
+pygame == 2.*
