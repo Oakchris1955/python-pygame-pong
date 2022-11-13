@@ -32,6 +32,7 @@ class Player():
 		self.position = position
 		self.buttons = buttons
 		self.direction = PADDLE_DIRECTION.NONE
+		self.score = 0
 	
 	def update(self):
 		if self.direction is PADDLE_DIRECTION.UP and self.y_offset<self.dimensions[1]/2-self.paddle_height/2:
@@ -77,6 +78,7 @@ class Ball:
 		self.angle = 0
 		self.angle = random.randrange(-180, 180)
 		self.players = players
+		self.replace_self = False
 
 	def collides_border(self) -> WALL_COLLISION_SIDE:
 		if abs(self.x_offset)>=self.dimensions[0]/2-self.ball_radius:
@@ -99,7 +101,17 @@ class Ball:
 			if border_collision_status is not WALL_COLLISION_SIDE.NONE:
 				print(border_collision_status)
 				if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
-					self.angle *= -1
+					for player in self.players:
+						if player.position is POSITION.LEFT and self.x_offset > 0:
+							player.score += 1
+							print(f"Left score: {player.score}")
+							self.replace_self = True
+							return
+						elif player.position is POSITION.RIGHT and self.x_offset < 0:
+							player.score += 1
+							print(f"Right score: {player.score}")
+							self.replace_self = True
+							return
 				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
 					self.angle = (self.angle+90)*-1-90
 			speed_x = math.sin(math.radians(self.angle))*self.ball_speed/self.accuracy
@@ -160,6 +172,8 @@ def main():
 			player.draw()
 
 		ball.update()
+		if ball.replace_self:
+			ball = Ball(window, dimensions, players)
 		ball.draw()
 		
 		pygame.display.update()
