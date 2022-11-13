@@ -68,6 +68,7 @@ class Player():
 class Ball:
 	ball_speed = 5
 	ball_radius = 7
+	accuracy = 30 # The higher the accuracy, the more accurate the collisions will be, but will take more time to compute
 	def __init__(self, window: pygame.Surface, dimensions: (int, int), players: [Player]):
 		self.window = window
 		self.dimensions = dimensions
@@ -93,19 +94,20 @@ class Ball:
 				print(self.angle)
 
 	def update(self):
-		border_collision_status = self.collides_border()
-		if border_collision_status is not WALL_COLLISION_SIDE.NONE:
-			print(border_collision_status)
-			if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
-				self.angle *= -1
-			elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
-				self.angle = (self.angle+90)*-1-90
-		speed_x = math.sin(math.radians(self.angle))*self.ball_speed
-		speed_y = math.cos(math.radians(self.angle))*self.ball_speed
-		self.x_offset += speed_x
-		self.y_offset += speed_y
+		for i in range(self.accuracy):
+			border_collision_status = self.collides_border()
+			if border_collision_status is not WALL_COLLISION_SIDE.NONE:
+				print(border_collision_status)
+				if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
+					self.angle *= -1
+				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
+					self.angle = (self.angle+90)*-1-90
+			speed_x = math.sin(math.radians(self.angle))*self.ball_speed/self.accuracy
+			speed_y = math.cos(math.radians(self.angle))*self.ball_speed/self.accuracy
+			self.x_offset += speed_x
+			self.y_offset += speed_y
 
-		self.collides_paddle()
+			self.collides_paddle()
 
 	def draw(self):
 		pygame.draw.circle(self.window, COLORS.WHITE, center_coords(self.x_offset, self.y_offset, self.dimensions), self.ball_radius)
