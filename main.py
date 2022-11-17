@@ -82,7 +82,7 @@ class Ball:
 		self.x_offset = 0
 		self.y_offset = 0
 		self.angle = 0
-		self.angle = random.randrange(-180, 180)
+		self.angle = random.randrange(20, 180)*random.choice([1, -1])
 		self.players = players
 		self.replace_self = False
 
@@ -94,14 +94,19 @@ class Ball:
 		else:
 			return WALL_COLLISION_SIDE.NONE
 	
-	def collides_paddle(self):
+	def collides_paddle(self) -> bool:
 		for player in self.players:
 			if abs(self.y_offset - player.y_offset) <= (player.paddle_height+player.paddle_width+self.ball_radius)/2 and abs(self.x_offset - player.get_x_position()) <= (player.paddle_width+self.ball_radius)/2:
 				print("Collision with paddle")
-				self.angle = math.degrees(math.atan2(self.y_offset - player.y_offset, self.x_offset - player.get_x_position()))
+				self.angle = random.randrange(20, 180)
+				if player.position is POSITION.RIGHT:
+					self.angle *= -1
 				print(self.angle)
+				return True
+		return False
 
 	def update(self):
+		has_already_collided = False
 		for i in range(self.accuracy):
 			border_collision_status = self.collides_border()
 			if border_collision_status is not WALL_COLLISION_SIDE.NONE:
@@ -125,7 +130,8 @@ class Ball:
 			self.x_offset += speed_x
 			self.y_offset += speed_y
 
-			self.collides_paddle()
+			if not has_already_collided:
+				has_already_collided = self.collides_paddle()
 
 	def draw(self):
 		pygame.draw.circle(self.window, COLORS.WHITE, center_coords(self.x_offset, self.y_offset, self.dimensions), self.ball_radius)
