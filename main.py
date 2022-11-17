@@ -2,6 +2,8 @@ import pygame
 from enum import Enum
 import random
 import math
+import logging
+import datetime
 from screeninfo import get_monitors, Monitor
 
 SCALE = (0.5, 0.5)
@@ -97,11 +99,10 @@ class Ball:
 	def collides_paddle(self) -> bool:
 		for player in self.players:
 			if abs(self.y_offset - player.y_offset) <= (player.paddle_height+player.paddle_width+self.ball_radius)/2 and abs(self.x_offset - player.get_x_position()) <= (player.paddle_width+self.ball_radius)/2:
-				print("Collision with paddle")
 				self.angle = random.randrange(20, 180)
 				if player.position is POSITION.RIGHT:
 					self.angle *= -1
-				print(self.angle)
+				logging.debug(f"Collisiong with paddle. New angle is {self.angle}")
 				return True
 		return False
 
@@ -110,17 +111,17 @@ class Ball:
 		for i in range(self.accuracy):
 			border_collision_status = self.collides_border()
 			if border_collision_status is not WALL_COLLISION_SIDE.NONE:
-				print(border_collision_status)
+				logging.debug(f"Collided with border: {border_collision_status}")
 				if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
 					for player in self.players:
 						if player.position is POSITION.LEFT and self.x_offset > 0:
 							player.score += 1
-							print(f"Left score: {player.score}")
+							logging.debug(f"Left score: {player.score}")
 							self.replace_self = True
 							return
 						elif player.position is POSITION.RIGHT and self.x_offset < 0:
 							player.score += 1
-							print(f"Right score: {player.score}")
+							logging.debug(f"Right score: {player.score}")
 							self.replace_self = True
 							return
 				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
@@ -152,11 +153,15 @@ def main():
 	pygame.init()
 	pygame.font.init()
 
+	#set a basicconfig for logging
+	logging.basicConfig(level=logging.DEBUG, filename=f'logs/{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.log', filemode='w',
+						format='%(asctime)s - %(levelname)s - %(message)s')
+
 	active_monitor = get_active_monitor()
 	run = True
 	clock = pygame.time.Clock()
 	dimensions = (SCALE[0]*active_monitor.width, SCALE[1]*active_monitor.height)
-	print(f"Screen width: {dimensions[0]}px, screen height: {dimensions[1]}px")
+	logging.info(f"Screen width: {dimensions[0]}px, screen height: {dimensions[1]}px")
 	window = pygame.display.set_mode(dimensions)
 
 	players = (
@@ -191,7 +196,14 @@ def main():
 		ball.draw()
 		
 		pygame.display.update()
-
+	
+	#when loop is interrupted, close the program
+	logging.debug('Closing program...\n')
+	pygame.quit()
 
 if __name__ == "__main__":
-	main()
+	try:
+		main()
+	#if an Exception a raisen, log it
+	except Exception as e:
+		logging.exception('An exception has occured', exc_info=True)

@@ -16,5 +16,5 @@ It is a Pong game made within just 2 days with Pygame. For those who don't know 
 
 * [x] Make ball disappear when touched left or right border
 * [x] Add score counter
-* [ ] Embed `logging` module
+* [x] Embed `logging` module
 * [ ] Make window resizable
