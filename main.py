@@ -138,9 +138,6 @@ class Ball:
 		pygame.draw.circle(self.window, COLORS.RED, center_coords(self.x_offset, self.y_offset, self.dimensions), 1)
 
 
-pygame.init()
-pygame.font.init()
-
 def get_active_monitor() -> Monitor or None:
 	for m in get_monitors():
 		if m.is_primary:
@@ -151,6 +148,10 @@ def center_coords(x: int, y: int, dimensions: (int, int)) -> (int, int):
 	return (x+dimensions[0]/2, -y+dimensions[1]/2)
 
 def main():
+	# initialize pygame submodules
+	pygame.init()
+	pygame.font.init()
+
 	active_monitor = get_active_monitor()
 	run = True
 	clock = pygame.time.Clock()
