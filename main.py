@@ -4,6 +4,7 @@ import random
 import math
 import logging
 import datetime
+import sys
 from screeninfo import get_monitors, Monitor
 
 SCALE = (0.5, 0.5)
@@ -102,7 +103,7 @@ class Ball:
 				self.angle = random.randrange(20, 180)
 				if player.position is POSITION.RIGHT:
 					self.angle *= -1
-				logging.debug(f"Collisiong with paddle. New angle is {self.angle}")
+				logging.debug(f"Collision with paddle. New angle is {self.angle}")
 				return True
 		return False
 
@@ -116,12 +117,12 @@ class Ball:
 					for player in self.players:
 						if player.position is POSITION.LEFT and self.x_offset > 0:
 							player.score += 1
-							logging.debug(f"Left score: {player.score}")
+							logging.info(f"Left score: {player.score}")
 							self.replace_self = True
 							return
 						elif player.position is POSITION.RIGHT and self.x_offset < 0:
 							player.score += 1
-							logging.debug(f"Right score: {player.score}")
+							logging.info(f"Right score: {player.score}")
 							self.replace_self = True
 							return
 				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
@@ -156,6 +157,10 @@ def main():
 	#set a basicconfig for logging
 	logging.basicConfig(level=logging.DEBUG, filename=f'logs/{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.log', filemode='w',
 						format='%(asctime)s - %(levelname)s - %(message)s')
+
+	custom_handler = logging.StreamHandler(sys.stdout)
+	custom_handler.setLevel(level=logging.INFO)
+	logging.getLogger().addHandler(custom_handler)
 
 	active_monitor = get_active_monitor()
 	run = True
