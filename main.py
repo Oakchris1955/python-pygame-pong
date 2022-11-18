@@ -85,7 +85,7 @@ class Ball:
 		self.x_offset = 0
 		self.y_offset = 0
 		self.angle = 0
-		self.angle = random.randrange(20, 180)*random.choice([1, -1])
+		self.angle = random.randrange(20, 160)*random.choice([1, -1])
 		self.players = players
 		self.replace_self = False
 
@@ -100,7 +100,7 @@ class Ball:
 	def collides_paddle(self) -> bool:
 		for player in self.players:
 			if abs(self.y_offset - player.y_offset) <= (player.paddle_height+player.paddle_width+self.ball_radius)/2 and abs(self.x_offset - player.get_x_position()) <= (player.paddle_width+self.ball_radius)/2:
-				self.angle = random.randrange(20, 180)
+				self.angle = random.randrange(20, 160)
 				if player.position is POSITION.RIGHT:
 					self.angle *= -1
 				logging.debug(f"Collision with paddle. New angle is {self.angle}")
@@ -126,7 +126,7 @@ class Ball:
 							self.replace_self = True
 							return
 				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
-					self.angle = (self.angle+90)*-1-90
+					self.angle = -(self.angle+90)-90
 			speed_x = math.sin(math.radians(self.angle))*self.ball_speed/self.accuracy
 			speed_y = math.cos(math.radians(self.angle))*self.ball_speed/self.accuracy
 			self.x_offset += speed_x
@@ -165,7 +165,8 @@ def main():
 	active_monitor = get_active_monitor()
 	run = True
 	clock = pygame.time.Clock()
-	dimensions = (SCALE[0]*active_monitor.width, SCALE[1]*active_monitor.height)
+	#dimensions = (SCALE[0]*active_monitor.width, SCALE[1]*active_monitor.height)
+	dimensions = (1700, 1000)
 	logging.info(f"Screen width: {dimensions[0]}px, screen height: {dimensions[1]}px")
 	window = pygame.display.set_mode(dimensions)
 
