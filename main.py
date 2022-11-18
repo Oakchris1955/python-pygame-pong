@@ -7,8 +7,6 @@ import datetime
 import sys
 from screeninfo import get_monitors, Monitor
 
-SCALE = (0.5, 0.5)
-
 class COLORS():
 	BLACK = (0, 0, 0)
 	WHITE = (255, 255, 255)
@@ -24,18 +22,25 @@ WALL_COLLISION_SIDE = Enum("COLLISION_SIDE", ["VERTICALLY", "HORIZONTICALLY", "N
 
 class Player():
 	paddle_speed = 6
-	paddle_width = 4
+	paddle_width = 5
 	paddle_height = 30
 	def __init__(self, window: pygame.Surface, width: int, height: int, dimensions: (int, int), position: POSITION, buttons: (int, int)):
+		# define some class variables
 		self.window = window
 		self.width = width
 		self.height = height
 		self.y_offset = 0
 		self.dimensions = dimensions
+		self.ratio = dimensions[0]/1000
 		self.position = position
 		self.buttons = buttons
 		self.direction = PADDLE_DIRECTION.NONE
 		self.score = 0
+
+		# and multiple class "constants" with self.ratio
+		self.paddle_speed *= self.ratio
+		self.paddle_width *= self.ratio
+		self.paddle_height *= self.ratio
 	
 	def update(self):
 		if self.direction is PADDLE_DIRECTION.UP and self.y_offset<self.dimensions[1]/2-self.paddle_height/2:
@@ -44,7 +49,7 @@ class Player():
 			self.y_offset -= self.paddle_speed
 
 	def get_x_position(self) -> int:
-		x = self.dimensions[0]/2-30
+		x = self.dimensions[0]/2-35*self.ratio
 		if self.position is POSITION.LEFT:
 			x *= -1
 		return x
@@ -53,9 +58,9 @@ class Player():
 		x = self.get_x_position()
 
 		# Begin by drawing the score
-		score_font = pygame.font.SysFont('freesanbold.ttf', 50)
+		score_font = pygame.font.SysFont('freesanbold.ttf', round(50*self.ratio))
 		score = score_font.render(str(self.score), True, COLORS.GRAY)
-		self.window.blit(score, center_coords(x-self.paddle_width*2, self.dimensions[1]/2-75, self.dimensions))
+		self.window.blit(score, center_coords(x-self.paddle_width*2, self.dimensions[1]/2-75*self.ratio, self.dimensions))
 
 		paddle = pygame.Rect(center_coords(x-self.paddle_width/2, self.y_offset+self.paddle_height/2, self.dimensions), (self.paddle_width, self.paddle_height))
 		# Draw the main paddle
@@ -80,14 +85,19 @@ class Ball:
 	ball_radius = 7
 	accuracy = 30 # The higher the accuracy, the more accurate the collisions will be, but will take more time to compute
 	def __init__(self, window: pygame.Surface, dimensions: (int, int), players: [Player]):
+		# define some class variables
 		self.window = window
 		self.dimensions = dimensions
+		self.ratio = dimensions[0]/1000
 		self.x_offset = 0
 		self.y_offset = 0
 		self.angle = 0
 		self.angle = random.randrange(20, 160)*random.choice([1, -1])
 		self.players = players
 		self.replace_self = False
+		# and multiple class "constants" with self.ratio
+		self.ball_speed *= self.ratio
+		self.ball_radius *= self.ratio
 
 	def collides_border(self) -> WALL_COLLISION_SIDE:
 		if abs(self.x_offset)>=self.dimensions[0]/2-self.ball_radius:
@@ -165,10 +175,9 @@ def main():
 	active_monitor = get_active_monitor()
 	run = True
 	clock = pygame.time.Clock()
-	#dimensions = (SCALE[0]*active_monitor.width, SCALE[1]*active_monitor.height)
-	dimensions = (1700, 1000)
+	dimensions = (active_monitor.width, active_monitor.height)
 	logging.info(f"Screen width: {dimensions[0]}px, screen height: {dimensions[1]}px")
-	window = pygame.display.set_mode(dimensions)
+	window = pygame.display.set_mode(dimensions, pygame.FULLSCREEN)
 
 	players = (
 		Player(window, 4, 30, dimensions, POSITION.LEFT, (pygame.K_w, pygame.K_s)),
