@@ -5,6 +5,7 @@ import math
 import logging
 import datetime
 import sys
+import typing
 from screeninfo import get_monitors, Monitor
 
 class COLORS():
@@ -24,7 +25,7 @@ class Player():
 	paddle_speed = 6
 	paddle_width = 5
 	paddle_height = 30
-	def __init__(self, window: pygame.Surface, width: int, height: int, dimensions: (int, int), position: POSITION, buttons: (int, int)):
+	def __init__(self, window: pygame.Surface, width: int, height: int, dimensions: typing.Tuple[int, int], position: POSITION, buttons: typing.Tuple[int, int]):
 		# define some class variables
 		self.window = window
 		self.width = width
@@ -84,7 +85,7 @@ class Ball:
 	ball_speed = 5
 	ball_radius = 7
 	accuracy = 30 # The higher the accuracy, the more accurate the collisions will be, but will take more time to compute
-	def __init__(self, window: pygame.Surface, dimensions: (int, int), players: [Player]):
+	def __init__(self, window: pygame.Surface, dimensions: typing.Tuple[int, int], players: typing.List[Player]):
 		# define some class variables
 		self.window = window
 		self.dimensions = dimensions
@@ -156,7 +157,7 @@ def get_active_monitor() -> Monitor or None:
 			return m
 	raise Exception("Expected at least one monitor to be primary")
 
-def center_coords(x: int, y: int, dimensions: (int, int)) -> (int, int):
+def center_coords(x: int, y: int, dimensions: typing.Tuple[int, int]) -> typing.Tuple[int, int]:
 	return (x+dimensions[0]/2, -y+dimensions[1]/2)
 
 def main():
