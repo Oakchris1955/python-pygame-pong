@@ -6,7 +6,6 @@ import logging
 import datetime
 import sys
 import typing
-from screeninfo import get_monitors, Monitor
 
 class COLORS():
 	BLACK = (0, 0, 0)
@@ -22,9 +21,9 @@ PADDLE_DIRECTION = Enum("PADDLE_DIRECTION", ["UP", "DOWN", "NONE"])
 WALL_COLLISION_SIDE = Enum("COLLISION_SIDE", ["VERTICALLY", "HORIZONTICALLY", "NONE"])
 
 class Player():
-	paddle_speed = 6
-	paddle_width = 5
-	paddle_height = 30
+	PADDLE_SPEED = 6
+	PADDLE_WIDTH = 5
+	PADDLE_HEIGHT = 30
 	def __init__(self, window: pygame.Surface, width: int, height: int, dimensions: typing.Tuple[int, int], position: POSITION, buttons: typing.Tuple[int, int]):
 		# define some class variables
 		self.window = window
@@ -39,10 +38,18 @@ class Player():
 		self.score = 0
 
 		# and multiple class "constants" with self.ratio
-		self.paddle_speed *= self.ratio
-		self.paddle_width *= self.ratio
-		self.paddle_height *= self.ratio
+		self.paddle_speed = self.PADDLE_SPEED * self.ratio
+		self.paddle_width = self.PADDLE_WIDTH * self.ratio
+		self.paddle_height = self.PADDLE_HEIGHT * self.ratio
 	
+	def sync_dimensions(self, new_dimensions: typing.Tuple[int, int]):
+		self.dimensions = new_dimensions
+		self.ratio = new_dimensions[0]/1000
+
+		self.paddle_speed = self.PADDLE_SPEED * self.ratio
+		self.paddle_width = self.PADDLE_WIDTH * self.ratio
+		self.paddle_height = self.PADDLE_HEIGHT * self.ratio
+
 	def update(self):
 		if self.direction is PADDLE_DIRECTION.UP and self.y_offset<self.dimensions[1]/2-self.paddle_height/2:
 			self.y_offset += self.paddle_speed
@@ -82,8 +89,8 @@ class Player():
 
 
 class Ball:
-	ball_speed = 5
-	ball_radius = 7
+	BALL_SPEED = 5
+	BALL_RADIUS = 7
 	accuracy = 30 # The higher the accuracy, the more accurate the collisions will be, but will take more time to compute
 	def __init__(self, window: pygame.Surface, dimensions: typing.Tuple[int, int], players: typing.List[Player]):
 		# define some class variables
@@ -97,8 +104,15 @@ class Ball:
 		self.players = players
 		self.replace_self = False
 		# and multiple class "constants" with self.ratio
-		self.ball_speed *= self.ratio
-		self.ball_radius *= self.ratio
+		self.ball_speed = self.BALL_SPEED * self.ratio
+		self.ball_radius = self.BALL_RADIUS * self.ratio
+
+	def sync_dimensions(self, new_dimensions: typing.Tuple[int, int]):
+		self.dimensions = new_dimensions
+		self.ratio = new_dimensions[0]/1000
+
+		self.ball_speed = self.BALL_SPEED * self.ratio
+		self.ball_radius = self.BALL_RADIUS * self.ratio
 
 	def collides_border(self) -> WALL_COLLISION_SIDE:
 		if abs(self.x_offset)>=self.dimensions[0]/2-self.ball_radius:
@@ -151,16 +165,22 @@ class Ball:
 		pygame.draw.circle(self.window, COLORS.RED, center_coords(self.x_offset, self.y_offset, self.dimensions), 1)
 
 
-def get_active_monitor() -> Monitor or None:
-	for m in get_monitors():
-		if m.is_primary:
-			return m
-	raise Exception("Expected at least one monitor to be primary")
-
 def center_coords(x: int, y: int, dimensions: typing.Tuple[int, int]) -> typing.Tuple[int, int]:
 	return (x+dimensions[0]/2, -y+dimensions[1]/2)
 
 def main():
+	# define some (local) functions
+	def sync_dimensions():
+		dimensions = possible_dimensions[dimension_index]
+		pygame.display.set_mode(dimensions)
+
+		for player in players:
+			player.sync_dimensions(dimensions)
+		ball.sync_dimensions(dimensions)
+		
+		if dimension_index == 0:
+			pygame.display.toggle_fullscreen()
+
 	# initialize pygame submodules
 	pygame.init()
 	pygame.font.init()
@@ -173,10 +193,16 @@ def main():
 	custom_handler.setLevel(level=logging.INFO)
 	logging.getLogger().addHandler(custom_handler)
 
-	active_monitor = get_active_monitor()
 	run = True
 	clock = pygame.time.Clock()
-	dimensions = (active_monitor.width, active_monitor.height)
+
+	possible_dimensions = pygame.display.list_modes()
+	# filter the dimensions for a screen ratio of 16/9
+	possible_dimensions = [*filter(lambda element: element[0]/element[1]==16/9, possible_dimensions)]
+	# and set the dimensions to the highest value
+	dimension_index = 0
+	dimensions = possible_dimensions[dimension_index]
+
 	logging.info(f"Screen width: {dimensions[0]}px, screen height: {dimensions[1]}px")
 	window = pygame.display.set_mode(dimensions, pygame.FULLSCREEN)
 
@@ -196,6 +222,14 @@ def main():
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_q:
 					run = False
+				elif event.key == pygame.K_MINUS or event.key == pygame.K_MINUS:
+					if dimension_index != len(possible_dimensions)-1:
+						dimension_index += 1
+						sync_dimensions()
+				elif event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS or (event.key == pygame.K_EQUALS and pygame.key.get_mods() & pygame.KMOD_SHIFT):
+					if dimension_index != 0:
+						dimension_index -= 1
+						sync_dimensions()
 				else:
 					for player in players:
 						player.process_keydown(event.key)
