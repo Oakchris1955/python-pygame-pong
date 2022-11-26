@@ -10,7 +10,8 @@ It is a Pong game made within just 2 days with Pygame. For those who don't know 
 2) Clone the repository either by using Git or by clicking the green button saying "Code" (after downloading, don't forget to unzip the file)
 3) `cd` to the repo directory
 4) Type `pip3 install -r requirements.txt` for Windows or `python3 -m pip install -r requirements.txt` for Linux
-5) To run the game, run `main.py`
+5) Create a new empty directory named "logs"
+6) To run the game, run `main.py`
 
 ## TODO
 
