@@ -50,7 +50,8 @@ class Player():
 		self.paddle_width = self.PADDLE_WIDTH * self.ratio
 		self.paddle_height = self.PADDLE_HEIGHT * self.ratio
 
-	def update(self):
+	def update(self, fps):
+		self.paddle_speed = self.PADDLE_SPEED * 60 / fps
 		if self.direction is PADDLE_DIRECTION.UP and self.y_offset<self.dimensions[1]/2-self.paddle_height/2:
 			self.y_offset += self.paddle_speed
 		elif self.direction is PADDLE_DIRECTION.DOWN and -self.y_offset<self.dimensions[1]/2-self.paddle_height/2:
@@ -132,7 +133,8 @@ class Ball:
 				return True
 		return False
 
-	def update(self):
+	def update(self, fps):
+		self.ball_speed = self.BALL_SPEED * 60 / fps
 		has_already_collided = False
 		for i in range(self.accuracy):
 			border_collision_status = self.collides_border()
@@ -215,6 +217,7 @@ def main():
 
 	while run:
 		clock.tick(60)
+		last_fps = clock.get_fps() if clock.get_fps() != 0 else 30
 		window.fill(COLORS.BLACK)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -237,10 +240,10 @@ def main():
 				for player in players:
 					player.process_keyup(event.key)
 		for player in players:
-			player.update()
+			player.update(last_fps)
 			player.draw()
 
-		ball.update()
+		ball.update(last_fps)
 		if ball.replace_self:
 			ball = Ball(window, dimensions, players)
 		ball.draw()
