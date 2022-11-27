@@ -245,7 +245,7 @@ def main():
 
 		ball.update(last_fps)
 		if ball.replace_self:
-			ball = Ball(window, dimensions, players)
+			ball = Ball(window, possible_dimensions[dimension_index], players)
 		ball.draw()
 		
 		pygame.display.update()
