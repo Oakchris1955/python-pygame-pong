@@ -6,6 +6,7 @@ import logging
 import datetime
 import sys
 import typing
+import argparse
 
 class COLORS():
 	BLACK = (0, 0, 0)
@@ -19,6 +20,7 @@ class COLORS():
 POSITION = Enum("POSITION", ["LEFT", "RIGHT"])
 PADDLE_DIRECTION = Enum("PADDLE_DIRECTION", ["UP", "DOWN", "NONE"])
 WALL_COLLISION_SIDE = Enum("COLLISION_SIDE", ["VERTICALLY", "HORIZONTICALLY", "NONE"])
+BUTTON_EVENT = Enum("BUTTON_EVENT", ["PRESSED", "RELEASED"])
 
 class Player():
 	PADDLE_SPEED = 6
@@ -182,6 +184,13 @@ def main():
 		
 		if dimension_index == 0:
 			pygame.display.toggle_fullscreen()
+	
+	def emulate_keypress(key: int, players: typing.Tuple[Player], state: BUTTON_EVENT):
+		for player in players:
+			if state is BUTTON_EVENT.PRESSED:
+				player.process_keydown(key)
+			elif state is BUTTON_EVENT.RELEASED:
+				player.process_keyup(key)
 
 	# initialize pygame submodules
 	pygame.init()
@@ -194,6 +203,15 @@ def main():
 	custom_handler = logging.StreamHandler(sys.stdout)
 	custom_handler.setLevel(level=logging.INFO)
 	logging.getLogger().addHandler(custom_handler)
+	
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--rpi-gpio", help="Uses some pins of the Raspberry Pi GPIO to control the paddles (only available when running on a Raspberry Pi or having Remote GPIO set up)", action="store_true")
+	args = parser.parse_args()
+	gpio_enabled = False
+	if args.rpi_gpio:
+		import gpiozero
+		logging.info("Succesfully imported the \"gpiozero\" library")
+		gpio_enabled = True
 
 	run = True
 	clock = pygame.time.Clock()
@@ -212,6 +230,24 @@ def main():
 		Player(window, 4, 30, dimensions, POSITION.LEFT, (pygame.K_w, pygame.K_s)),
 		Player(window, 4, 30, dimensions, POSITION.RIGHT, (pygame.K_UP, pygame.K_DOWN))
 	)
+	
+	if gpio_enabled:
+		left_up_button = gpiozero.Button(22)
+		left_up_button.when_pressed = lambda: emulate_keypress(pygame.K_w, players, BUTTON_EVENT.PRESSED)
+		left_up_button.when_released = lambda: emulate_keypress(pygame.K_w, players, BUTTON_EVENT.RELEASED)
+		
+		left_bottom_button = gpiozero.Button(24)
+		left_bottom_button.when_pressed = lambda: emulate_keypress(pygame.K_s, players, BUTTON_EVENT.PRESSED)
+		left_bottom_button.when_released = lambda: emulate_keypress(pygame.K_s, players, BUTTON_EVENT.RELEASED)
+		
+		right_up_button = gpiozero.Button(27)
+		right_up_button.when_pressed = lambda: emulate_keypress(pygame.K_UP, players, BUTTON_EVENT.PRESSED)
+		right_up_button.when_released = lambda: emulate_keypress(pygame.K_UP, players, BUTTON_EVENT.RELEASED)
+		
+		right_bottom_button = gpiozero.Button(23)
+		right_bottom_button.when_pressed = lambda: emulate_keypress(pygame.K_DOWN, players, BUTTON_EVENT.PRESSED)
+		right_bottom_button.when_released = lambda: emulate_keypress(pygame.K_DOWN, players, BUTTON_EVENT.RELEASED)
+	
 
 	ball = Ball(window, dimensions, players)
 
