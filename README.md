@@ -20,10 +20,18 @@ The schematic is shown below:
 
 ![Circuitry.svg](circuitry/circuit.svg)
 
+### Custom pin numbering
+Simply, create a file named `.env`. The values of variables `LEFT_UP`, `LEFT_DOWN`, `RIGHT_UP` and `RIGHT_DOWN` will be the pin numbers of each button that triggers the corresponding action (for example, a `.env` file with the contents
+```
+LEFT_UP: "4"
+RIGHT_DOWN: "BOARD5" 
+```
+would change the pin for moving the left paddle up to GPIO 4 and for movng the right paddle down to Board pin 5 (the GPIO 3 pin))
+
 ## TODO
 
 * [x] Make ball disappear when touched left or right border
 * [x] Add score counter
 * [x] Embed `logging` module
 * [x] Make window resizable
-* [ ] Make the GPIO numbers easily configurable
+* [x] Make the GPIO numbers easily configurable

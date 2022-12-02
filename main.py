@@ -5,8 +5,10 @@ import math
 import logging
 import datetime
 import sys
+import os
 import typing
 import argparse
+from dotenv import load_dotenv
 
 class COLORS():
 	BLACK = (0, 0, 0)
@@ -231,20 +233,22 @@ def main():
 		Player(window, 4, 30, dimensions, POSITION.RIGHT, (pygame.K_UP, pygame.K_DOWN))
 	)
 	
+	load_dotenv()
+
 	if gpio_enabled:
-		left_up_button = gpiozero.Button(22)
+		left_up_button = gpiozero.Button(os.getenv('LEFT_UP', "22"))
 		left_up_button.when_pressed = lambda: emulate_keypress(pygame.K_w, players, BUTTON_EVENT.PRESSED)
 		left_up_button.when_released = lambda: emulate_keypress(pygame.K_w, players, BUTTON_EVENT.RELEASED)
 		
-		left_bottom_button = gpiozero.Button(24)
+		left_bottom_button = gpiozero.Button(os.getenv('LEFT_DOWN', "24"))
 		left_bottom_button.when_pressed = lambda: emulate_keypress(pygame.K_s, players, BUTTON_EVENT.PRESSED)
 		left_bottom_button.when_released = lambda: emulate_keypress(pygame.K_s, players, BUTTON_EVENT.RELEASED)
 		
-		right_up_button = gpiozero.Button(27)
+		right_up_button = gpiozero.Button(os.getenv('RIGHT_UP', "27"))
 		right_up_button.when_pressed = lambda: emulate_keypress(pygame.K_UP, players, BUTTON_EVENT.PRESSED)
 		right_up_button.when_released = lambda: emulate_keypress(pygame.K_UP, players, BUTTON_EVENT.RELEASED)
 		
-		right_bottom_button = gpiozero.Button(23)
+		right_bottom_button = gpiozero.Button(os.getenv('RIGHT_DOWN', "23"))
 		right_bottom_button.when_pressed = lambda: emulate_keypress(pygame.K_DOWN, players, BUTTON_EVENT.PRESSED)
 		right_bottom_button.when_released = lambda: emulate_keypress(pygame.K_DOWN, players, BUTTON_EVENT.RELEASED)
 	
