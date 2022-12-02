@@ -16,6 +16,10 @@ It is a Pong game with Raspbbery Pi support originally made within just 2 days u
 ## Setup for Raspberry Pi
 Just connect four pull-up buttons to BCM GPIO's 22, 23, 24 and 27. When pushing the button at Pin 27, the right paddle will go up, on Pin 23 down, on Pin 22 the left paddle will go up and on Pin 24 down.
 
+The schematic is shown below:
+
+![Circuitry.svg](circuitry/circuit.svg)
+
 ## TODO
 
 * [x] Make ball disappear when touched left or right border
