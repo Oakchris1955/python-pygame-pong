@@ -142,31 +142,38 @@ class Ball:
 	def update(self, fps):
 		self.ball_speed = self.BALL_SPEED * 60 / fps
 		has_already_collided = False
-		for i in range(self.accuracy):
-			border_collision_status = self.collides_border()
-			if border_collision_status is not WALL_COLLISION_SIDE.NONE:
-				logging.debug(f"Collided with border: {border_collision_status}")
-				if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
-					for player in self.players:
-						if player.position is POSITION.LEFT and self.x_offset > 0:
-							player.score += 1
-							logging.info(f"Left score: {player.score}")
-							self.replace_self = True
-							return
-						elif player.position is POSITION.RIGHT and self.x_offset < 0:
-							player.score += 1
-							logging.info(f"Right score: {player.score}")
-							self.replace_self = True
-							return
-				elif border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
-					self.angle = -(self.angle+90)-90
-			speed_x = math.sin(math.radians(self.angle))*self.ball_speed/self.accuracy
-			speed_y = math.cos(math.radians(self.angle))*self.ball_speed/self.accuracy
-			self.x_offset += speed_x
-			self.y_offset += speed_y
 
-			if not has_already_collided:
-				has_already_collided = self.collides_paddle()
+		speed_x = math.sin(math.radians(self.angle))*self.ball_speed
+		speed_y = math.cos(math.radians(self.angle))*self.ball_speed
+		self.x_offset += speed_x
+		self.y_offset += speed_y
+
+		border_collision_status = self.collides_border()
+
+		if border_collision_status is not WALL_COLLISION_SIDE.NONE:
+			logging.debug(f"Collided with border: {border_collision_status}")
+
+		if border_collision_status is WALL_COLLISION_SIDE.HORIZONTICALLY:
+			self.y_offset -= speed_y
+			self.angle = -(self.angle+90)-90
+
+		border_collision_status = self.collides_border()
+		if border_collision_status is WALL_COLLISION_SIDE.VERTICALLY:
+			for player in self.players:
+				if player.position is POSITION.LEFT and self.x_offset > 0:
+					player.score += 1
+					logging.info(f"Right score: {player.score}")
+					self.replace_self = True
+					return
+				elif player.position is POSITION.RIGHT and self.y_offset < 0:
+					player.score += 1
+					logging.info(f"Left score: {player.score}")
+					self.replace_self = True
+					return
+
+		if not has_already_collided:
+			has_already_collided = self.collides_paddle()
+
 
 	def draw(self):
 		pygame.draw.circle(self.window, COLORS.WHITE, center_coords(self.x_offset, self.y_offset, self.dimensions), self.ball_radius)
